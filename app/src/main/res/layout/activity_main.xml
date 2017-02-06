@@ -10,8 +10,22 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.xueyangli.ilovezappos.MainActivity">
 
-    <TextView
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:inputType="textPersonName"
+        android:text="amd"
+        android:ems="10"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/searchBar" />
+
+    <Button
+        android:text="Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/searchBar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="33dp"
+        android:id="@+id/searchButton" />
 </RelativeLayout>
