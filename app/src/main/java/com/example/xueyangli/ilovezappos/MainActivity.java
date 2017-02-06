@@ -1,44 +1,30 @@
 package com.example.xueyangli.ilovezappos;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
-import com.google.gson.Gson;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.Scanner;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.http.GET;
-import retrofit2.http.Query;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-class ProductData {
-    ResponseData originalTerm;
-}
+public class MainActivity extends AppCompatActivity{
 
-class ResponseData {
-    String translatedText;
-}
+    public static final String SEARCH_URL = "https://api.zappos.com/Search";
+    private static final String API_KEY = "b743e26728e16b81da139182bb2094357c31d331";
 
-public class MainActivity extends AppCompatActivity {
-
-    public static final String BASE_URL = "https://api.zappos.com/";
-    private static final String query_key = "b743e26728e16b81da139182bb2094357c31d331";
-
-    private ZapposAPIService mService;
-
-    public interface ZapposAPIService{
-        @GET("/Search")
-        Call<ProductData> getProduct(
-                @Query("term") String brandname,
-                @Query("key") String querykey);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,62 +33,78 @@ public class MainActivity extends AppCompatActivity {
 
         // UI Setup
         final EditText search_bar = (EditText) findViewById(R.id.searchBar);
-        Button search_button = (Button)findViewById(R.id.searchButton);
+        Button search_button = (Button) findViewById(R.id.searchButton);
 
         search_button.setOnClickListener(
-                new View.OnClickListener(){
-                    public void onClick(View view){
-                        Log.d("search_bar: ", search_bar.getText().toString());
+                new View.OnClickListener() {
+                    public void onClick(View view) {
+                        String user_input = search_bar.getText().toString();
+                        new QueryZapposAPITask().execute(SEARCH_URL,user_input,API_KEY);
                     }
                 }
         );
 
-        // Create Retrofit instance
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create(new Gson()))
-                .build();
 
-        mService = retrofit.create(ZapposAPIService.class);
-
-        Log.d("before", "mService.getProduct");
-        mService.getProduct("nike",query_key).enqueue(new Callback<ProductData>() {
-            @Override
-            public void onResponse(Call<ProductData> call, Response<ProductData> response) {
-                Log.d("in", "onResponse");
-                if(response.body() == null){
-                    Log.d("checkNull", "is null");
-                }
-                else{
-                    Log.d("checkNull", "not null");
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<ProductData> call, Throwable t) {
-                Log.d("in", "onFailure");
-                Log.d("t",t.toString());
-            }
-        });
     }
 
-//    public void translate(final String textToTranslate, final String fromLanguage, final String toLanguage) {
-//        mService.getTranslation(textToTranslate, URLEncoder.encode(fromLanguage + "|" + toLanguage))
-//                .enqueue(new Callback<TranslatedData>() {
-//
-//                    @Override
-//                    public void onResponse(Response<TranslatedData> response, Retrofit retrofit) {
-//                        String output =
-//                                String.format("Translation of: %s, %s->%s = %s", textToTranslate,
-//                                        fromLanguage, toLanguage, response.body().responseData.translatedText);
-//
-//                        System.out.println("Result: " + output);
-//                    }
-//
-//                    @Override public void onFailure(Throwable t) {
-//                        System.out.println("[DEBUG]" + " RestApi onFailure - " + "");
-//                    }
-//                });
-//    }
+    class QueryZapposAPITask extends AsyncTask<String, Void, JSONObject> {
+
+        @Override
+        protected JSONObject doInBackground(String... params) {
+            String url = params[0];
+            String brand_name = params[1];
+            String api_key = params[2];
+
+            String charset = "UTF-8";
+
+            try {
+                String query = String.format("term=%s&key=%s",
+                        URLEncoder.encode(brand_name, charset),
+                        URLEncoder.encode(api_key, charset));
+
+                URLConnection connection = new URL(url + "?" + query).openConnection();
+                connection.setRequestProperty("Accept-Charset", charset);
+                InputStream response = connection.getInputStream();
+
+                String res = "";
+                try (Scanner scanner = new Scanner(response)) {
+                    String responseBody = scanner.useDelimiter("\\A").next();
+                    res += responseBody;
+                }
+
+                Log.d("query result", res);
+                JSONObject result = new JSONObject(res);
+                return result;
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject jsonObject) {
+            super.onPostExecute(jsonObject);
+
+            try{
+                JSONArray jArray = jsonObject.getJSONArray("results");
+
+                if(jArray.length() == 0){
+                    Log.d("EMPTY",String.format("No result found for input: %s",jsonObject.getString("originalTerm")));
+                }
+
+                for(int i = 0; i < jArray.length(); i++){
+                    String product_name = jArray.getJSONObject(i).getString("productName");
+                    Log.d(String.format("product %d",i),product_name);
+                }
+            }
+            catch (JSONException e){
+                e.printStackTrace();
+            }
+        }
+    }
 }
