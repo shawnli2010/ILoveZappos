@@ -1,6 +1,10 @@
 package com.example.xueyangli.ilovezappos;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,12 +12,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.xueyangli.ilovezappos.model.Product;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import org.json.JSONArray;
@@ -25,11 +32,16 @@ public class MainActivity extends AppCompatActivity{
     public static final String SEARCH_URL = "https://api.zappos.com/Search";
     private static final String API_KEY = "b743e26728e16b81da139182bb2094357c31d331";
 
+    private Context mContext;
+
+    private ArrayList<Product> productListDataSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mContext = this;
 
         // UI Setup
         final EditText search_bar = (EditText) findViewById(R.id.searchBar);
@@ -39,7 +51,7 @@ public class MainActivity extends AppCompatActivity{
                 new View.OnClickListener() {
                     public void onClick(View view) {
                         String user_input = search_bar.getText().toString();
-                        new QueryZapposAPITask().execute(SEARCH_URL,user_input,API_KEY);
+                        new QueryZapposAPITask(mContext).execute(SEARCH_URL,user_input,API_KEY);
                     }
                 }
         );
@@ -48,6 +60,12 @@ public class MainActivity extends AppCompatActivity{
     }
 
     class QueryZapposAPITask extends AsyncTask<String, Void, JSONObject> {
+
+        Context context;
+
+        public QueryZapposAPITask(Context mContext){
+            this.context = mContext;
+        }
 
         @Override
         protected JSONObject doInBackground(String... params) {
@@ -93,18 +111,59 @@ public class MainActivity extends AppCompatActivity{
             try{
                 JSONArray jArray = jsonObject.getJSONArray("results");
 
-                if(jArray.length() == 0){
-                    Log.d("EMPTY",String.format("No result found for input: %s",jsonObject.getString("originalTerm")));
-                }
+                if(jArray.length() == 0) {
+                    Log.d("EMPTY", String.format("No result found for input: %s", jsonObject.getString("originalTerm")));
 
-                for(int i = 0; i < jArray.length(); i++){
-                    String product_name = jArray.getJSONObject(i).getString("productName");
-                    Log.d(String.format("product %d",i),product_name);
+                    AlertDialog.Builder goLogin = new AlertDialog.Builder(context);
+                    goLogin.setMessage("No result found for your input");
+                    goLogin.setCancelable(false);
+                    goLogin.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+                    AlertDialog alertLogin = goLogin.create();
+                    alertLogin.show();
+
+                }
+                else{
+                    productListDataSource = getProductList(jArray);
+                    Intent intent = new Intent(getBaseContext(), ProductListActivity.class);
+                    intent.putExtra("productListDataSource",productListDataSource);
+                    startActivity(intent);
                 }
             }
             catch (JSONException e){
                 e.printStackTrace();
             }
+        }
+
+        private ArrayList<Product> getProductList(JSONArray jArray){
+
+            ArrayList<Product> result = new ArrayList<>();
+
+            try{
+                for(int i = 0; i < jArray.length(); i++) {
+                    Product product = new Product();
+                    product.brandName = jArray.getJSONObject(i).getString("brandName");
+                    product.thumbnailImageUrl = jArray.getJSONObject(i).getString("thumbnailImageUrl");
+                    product.productId = jArray.getJSONObject(i).getString("productId");
+                    product.originalPrice = jArray.getJSONObject(i).getString("originalPrice");
+                    product.styleId = jArray.getJSONObject(i).getString("styleId");
+                    product.colorId = jArray.getJSONObject(i).getString("colorId");
+                    product.price = jArray.getJSONObject(i).getString("price");
+                    product.percentOff = jArray.getJSONObject(i).getString("percentOff");
+                    product.productUrl = jArray.getJSONObject(i).getString("productUrl");
+                    product.productName = jArray.getJSONObject(i).getString("productName");
+                    result.add(product);
+                }
+            }
+            catch (JSONException e){
+                e.printStackTrace();
+            }
+
+            return result;
+
         }
     }
 }
