@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.example.xueyangli.ilovezappos.model.Product;
+import com.kaopiz.kprogresshud.KProgressHUD;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity{
 
     public static final String SEARCH_URL = "https://api.zappos.com/Search";
     private static final String API_KEY = "b743e26728e16b81da139182bb2094357c31d331";
+    private KProgressHUD hud;
 
     private Context mContext;
 
@@ -56,8 +58,6 @@ public class MainActivity extends AppCompatActivity{
                     }
                 }
         );
-
-
     }
 
     @Override
@@ -73,6 +73,19 @@ public class MainActivity extends AppCompatActivity{
 
         public QueryZapposAPITask(Context mContext){
             this.context = mContext;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            hud = KProgressHUD.create(MainActivity.this)
+                    .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+                    .setLabel("LOADING")
+                    .setCancellable(true)
+                    .setAnimationSpeed(2)
+                    .setDimAmount(0.5f);
+
+            hud.show();
         }
 
         @Override
@@ -116,6 +129,8 @@ public class MainActivity extends AppCompatActivity{
         protected void onPostExecute(JSONObject jsonObject) {
             super.onPostExecute(jsonObject);
 
+            hud.dismiss();
+
             if(jsonObject == null){
                 showAlert("Please check your internet connection");
             }
@@ -143,15 +158,15 @@ public class MainActivity extends AppCompatActivity{
         }
 
         private void showAlert(String message){
-            AlertDialog.Builder goLogin = new AlertDialog.Builder(context);
-            goLogin.setMessage(message);
-            goLogin.setCancelable(false);
-            goLogin.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setMessage(message);
+            builder.setCancelable(false);
+            builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     dialog.cancel();
                 }
             });
-            AlertDialog alertLogin = goLogin.create();
+            AlertDialog alertLogin = builder.create();
             alertLogin.show();
         }
 
