@@ -1,7 +1,10 @@
 package com.example.xueyangli.ilovezappos;
 
+import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,8 +12,11 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.example.xueyangli.ilovezappos.databinding.ActivityProductBinding;
 import com.example.xueyangli.ilovezappos.model.Product;
 import com.example.xueyangli.ilovezappos.model.ScaleImageView;
 
@@ -26,12 +32,29 @@ public class ProductActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_product);
+//        setContentView(R.layout.activity_product);
 
         product = (Product)getIntent().getSerializableExtra("product");
-        productImageView = (ScaleImageView)findViewById(R.id.product_image);
 
+        ActivityProductBinding binding = DataBindingUtil.setContentView(this,R.layout.activity_product);
+        binding.setProduct(product);
+
+        productImageView = (ScaleImageView)findViewById(R.id.product_image);
         new LoadThumbnailTask().execute(product.thumbnailImageUrl);
+
+        TextView original_price = (TextView)findViewById(R.id.original_price);
+        original_price.setPaintFlags(original_price.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+        TextView percent_off = (TextView)findViewById(R.id.percentOff);
+        percent_off.setTextColor(Color.RED);
+
+        original_price.setVisibility(View.INVISIBLE);
+        percent_off.setVisibility(View.INVISIBLE);
+
+        if(!product.price.equals(product.originalPrice)){
+            original_price.setVisibility(View.VISIBLE);
+            percent_off.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ILoveZappos</string>
+    <string name="sku">SKU  %s</string>
+    <string name="off">\u0020\u0020%s  OFF</string>
 </resources>
