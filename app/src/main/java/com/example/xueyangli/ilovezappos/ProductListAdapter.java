@@ -17,12 +17,12 @@ import java.util.ArrayList;
  * Created by xueyangli on 2/6/17.
  */
 
-public class ProductAdapter extends BaseAdapter {
+public class ProductListAdapter extends BaseAdapter {
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<Product> mDataSource;
 
-    public ProductAdapter(Context context, ArrayList<Product> items){
+    public ProductListAdapter(Context context, ArrayList<Product> items){
         this.mContext = context;
         this.mDataSource = items;
         this.mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

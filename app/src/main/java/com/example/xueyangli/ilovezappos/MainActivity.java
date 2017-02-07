@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -59,6 +60,13 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.my_menu, menu);
+        return true;
+    }
+
     class QueryZapposAPITask extends AsyncTask<String, Void, JSONObject> {
 
         Context context;
@@ -108,34 +116,43 @@ public class MainActivity extends AppCompatActivity{
         protected void onPostExecute(JSONObject jsonObject) {
             super.onPostExecute(jsonObject);
 
-            try{
-                JSONArray jArray = jsonObject.getJSONArray("results");
+            if(jsonObject == null){
+                showAlert("Please check your internet connection");
+            }
+            else{
+                try{
+                    JSONArray jArray = jsonObject.getJSONArray("results");
 
-                if(jArray.length() == 0) {
-                    Log.d("EMPTY", String.format("No result found for input: %s", jsonObject.getString("originalTerm")));
+                    if(jArray.length() == 0) {
+                        Log.d("EMPTY", String.format("No result found for input: %s", jsonObject.getString("originalTerm")));
 
-                    AlertDialog.Builder goLogin = new AlertDialog.Builder(context);
-                    goLogin.setMessage("No result found for your input");
-                    goLogin.setCancelable(false);
-                    goLogin.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-                    AlertDialog alertLogin = goLogin.create();
-                    alertLogin.show();
-
+                        showAlert("No result found for your input");
+                    }
+                    else{
+                        productListDataSource = getProductList(jArray);
+                        Intent intent = new Intent(getBaseContext(), ProductListActivity.class);
+                        intent.putExtra("productListDataSource",productListDataSource);
+                        startActivity(intent);
+                    }
                 }
-                else{
-                    productListDataSource = getProductList(jArray);
-                    Intent intent = new Intent(getBaseContext(), ProductListActivity.class);
-                    intent.putExtra("productListDataSource",productListDataSource);
-                    startActivity(intent);
+                catch (JSONException e){
+                    e.printStackTrace();
                 }
             }
-            catch (JSONException e){
-                e.printStackTrace();
-            }
+
+        }
+
+        private void showAlert(String message){
+            AlertDialog.Builder goLogin = new AlertDialog.Builder(context);
+            goLogin.setMessage(message);
+            goLogin.setCancelable(false);
+            goLogin.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.cancel();
+                }
+            });
+            AlertDialog alertLogin = goLogin.create();
+            alertLogin.show();
         }
 
         private ArrayList<Product> getProductList(JSONArray jArray){
