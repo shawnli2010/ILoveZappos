@@ -1,9 +1,8 @@
 package com.example.xueyangli.ilovezappos;
 
-import android.app.ListActivity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,11 +14,7 @@ import com.example.xueyangli.ilovezappos.model.Product;
 
 import java.util.ArrayList;
 
-/**
- * Created by xueyangli on 2/6/17.
- */
-
-public class ProductListActivity extends AppCompatActivity implements View.OnClickListener {
+public class CartListActivity extends AppCompatActivity implements View.OnClickListener{
 
     ListView listView;
     private ArrayList<Product> dataSource;
@@ -30,23 +25,13 @@ public class ProductListActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.product_list);
+        setContentView(R.layout.activity_cart);
 
+        dataSource = ((MyApplication) this.getApplication()).getCart();
         cart = ((MyApplication) this.getApplication()).getCart();
 
-        dataSource = (ArrayList<Product>) getIntent().getSerializableExtra("productListDataSource");
-
         listView = (ListView)findViewById(android.R.id.list);
-        listView.setAdapter(new ProductListAdapter(this,dataSource));
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Product product = dataSource.get(position);
-                Intent intent = new Intent(getBaseContext(), ProductActivity.class);
-                intent.putExtra("product",product);
-                startActivity(intent);
-            }
-        });
+        listView.setAdapter(new CartListAdapater(this,dataSource));
     }
 
     @Override
@@ -68,8 +53,6 @@ public class ProductListActivity extends AppCompatActivity implements View.OnCli
 
         MenuItem menuItem = menu.findItem(R.id.cart);
         View menu_hotlist = menuItem.getActionView();
-
-        menu_hotlist.setOnClickListener(this);
 
         currentCartSizeTextView = (TextView) menu_hotlist.findViewById(R.id.cart_count);
         updateHotCount(cart.size());
@@ -94,5 +77,4 @@ public class ProductListActivity extends AppCompatActivity implements View.OnCli
             }
         });
     }
-
 }

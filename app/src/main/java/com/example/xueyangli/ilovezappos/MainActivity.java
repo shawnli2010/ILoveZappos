@@ -9,9 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.xueyangli.ilovezappos.model.Product;
 import com.kaopiz.kprogresshud.KProgressHUD;
@@ -29,7 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     public static final String SEARCH_URL = "https://api.zappos.com/Search";
     private static final String API_KEY = "b743e26728e16b81da139182bb2094357c31d331";
@@ -39,12 +41,20 @@ public class MainActivity extends AppCompatActivity{
 
     private ArrayList<Product> productListDataSource;
 
+    private ArrayList<Product> cart;
+    private TextView currentCartSizeTextView = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         mContext = this;
+
+        // Create the global cart object
+        ArrayList<Product> global_cart = new ArrayList<Product>();
+        ((MyApplication) this.getApplication()).setCart(global_cart);
+        cart = ((MyApplication) this.getApplication()).getCart();
 
         // UI Setup
         final EditText search_bar = (EditText) findViewById(R.id.searchBar);
@@ -61,10 +71,49 @@ public class MainActivity extends AppCompatActivity{
     }
 
     @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(getBaseContext(), CartListActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateHotCount(cart.size());
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.my_menu, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.cart);
+        View menu_hotlist = menuItem.getActionView();
+
+        menu_hotlist.setOnClickListener(this);
+
+        currentCartSizeTextView = (TextView) menu_hotlist.findViewById(R.id.cart_count);
+        updateHotCount(cart.size());
+
+
         return true;
+    }
+
+    // call the updating code on the main thread,
+    // so we can call this asynchronously
+    public void updateHotCount(final int new_cart_size) {
+        if (currentCartSizeTextView == null) return;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (new_cart_size == 0)
+                    currentCartSizeTextView.setVisibility(View.INVISIBLE);
+                else {
+                    currentCartSizeTextView.setVisibility(View.VISIBLE);
+                    currentCartSizeTextView.setText(Integer.toString(new_cart_size));
+                }
+            }
+        });
     }
 
     class QueryZapposAPITask extends AsyncTask<String, Void, JSONObject> {

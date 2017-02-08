@@ -10,22 +10,34 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.xueyangli.ilovezappos.MainActivity">
 
+    <TextView
+        android:text="ILoveZappos"
+        android:layout_above="@+id/searchBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="85dp"
+        android:id="@+id/textView2" />
+
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
-        android:text="ugg"
+        android:text=""
+        android:hint="type in brand name"
         android:ems="10"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:id="@+id/searchBar" />
 
     <Button
-        android:text="Button"
+        android:text="SEARCH"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/searchBar"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="33dp"
         android:id="@+id/searchButton" />
+
 </RelativeLayout>
