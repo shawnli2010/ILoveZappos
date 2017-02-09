@@ -24,6 +24,7 @@ import com.example.xueyangli.ilovezappos.databinding.ActivityProductBinding;
 import com.example.xueyangli.ilovezappos.model.Product;
 import com.example.xueyangli.ilovezappos.model.ScaleImageView;
 import com.kaopiz.kprogresshud.KProgressHUD;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -75,7 +76,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         root.addView(smallProductImageView);
         setContentView(root);
 
-        new LoadThumbnailTask().execute(product.thumbnailImageUrl);
+//        new LoadThumbnailTask().execute(product.thumbnailImageUrl);
+        Picasso.with(this).load(product.thumbnailImageUrl).placeholder(R.mipmap.ic_launcher).into(productImageView);
+        Picasso.with(this).load(product.thumbnailImageUrl).placeholder(R.mipmap.ic_launcher).into(smallProductImageView);
+
         /***************** Product ImageView Setup *****************/
 
 
@@ -168,49 +172,5 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 }
             }
         });
-    }
-
-    class LoadThumbnailTask extends AsyncTask<String, Void, Bitmap>{
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            hud = KProgressHUD.create(ProductActivity.this)
-                    .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
-                    .setLabel("LOADING")
-                    .setCancellable(true)
-                    .setAnimationSpeed(2)
-                    .setDimAmount(0.5f);
-
-            hud.show();
-        }
-
-        @Override
-        protected Bitmap doInBackground(String... params) {
-            String image_url = params[0] ;
-
-            try{
-                URL url = new URL(image_url);
-                Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-                return bmp;
-            }
-            catch (MalformedURLException e){
-                e.printStackTrace();
-            }
-            catch (IOException e){
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bmp) {
-            super.onPostExecute(bmp);
-            hud.dismiss();
-
-            productImageView.setImageBitmap(bmp);
-            smallProductImageView.setImageBitmap(bmp);
-        }
     }
 }

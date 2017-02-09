@@ -7,9 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.xueyangli.ilovezappos.model.Product;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -54,6 +56,8 @@ public class CartListAdapater extends BaseAdapter {
         TextView brandNameTextView = (TextView) rowView.findViewById(R.id.cart_brand_name);
         TextView productNameTextView = (TextView) rowView.findViewById(R.id.cart_product_name);
         Button removeButton = (Button) rowView.findViewById(R.id.remove_product_button);
+        ImageView imageView = (ImageView) rowView.findViewById(R.id.product_icon);
+
 
         Product product = mDataSource.get(position);
 
@@ -73,6 +77,7 @@ public class CartListAdapater extends BaseAdapter {
                 }
             }
         });
+        Picasso.with(mContext).load(product.thumbnailImageUrl).placeholder(R.mipmap.ic_launcher).into(imageView);
 
 
         return rowView;

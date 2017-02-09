@@ -17,24 +17,23 @@ import android.widget.TextView;
 
 import com.example.xueyangli.ilovezappos.model.Product;
 import com.kaopiz.kprogresshud.KProgressHUD;
+import com.example.xueyangli.ilovezappos.ConstantUtil;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    public static final String SEARCH_URL = "https://api.zappos.com/Search";
-    private static final String API_KEY = "b743e26728e16b81da139182bb2094357c31d331";
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,Callback<ProductListResponse>{
+
+    private Retrofit retrofit;
+
     private KProgressHUD hud;
 
     private Context mContext;
@@ -51,6 +50,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mContext = this;
 
+        retrofit = new Retrofit.Builder()
+                .baseUrl(ConstantUtil.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+//        makeAPICall("nike");
+
         // Create the global cart object
         ArrayList<Product> global_cart = new ArrayList<Product>();
         ((MyApplication) this.getApplication()).setCart(global_cart);
@@ -64,10 +70,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new View.OnClickListener() {
                     public void onClick(View view) {
                         String user_input = search_bar.getText().toString();
-                        new QueryZapposAPITask(mContext).execute(SEARCH_URL,user_input,API_KEY);
+                        makeAPICall(user_input);
                     }
                 }
         );
+
+
+    }
+
+    @Override
+    public void onResponse(Call<ProductListResponse> call, Response<ProductListResponse> response) {
+        hud.dismiss();
+        String body = response.body().toString();
+        boolean isSuccess = response.raw().isSuccessful();
+        List<Product> products = new ArrayList<>();
+
+        if(isSuccess){
+            products = response.body().getProducts();
+            productListDataSource = (ArrayList)products;
+            Intent intent = new Intent(getBaseContext(), ProductListActivity.class);
+            intent.putExtra("productListDataSource",productListDataSource);
+            startActivity(intent);
+        }
+        else{
+            showAlert("Please check your internet connection");
+        }
+    }
+
+    @Override
+    public void onFailure(Call<ProductListResponse> call, Throwable t) {
+        hud.dismiss();
+        showAlert("Please check your internet connection");
+    }
+
+    private void makeAPICall(String brand_name){
+        hud = KProgressHUD.create(MainActivity.this)
+                .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+                .setLabel("LOADING")
+                .setCancellable(true)
+                .setAnimationSpeed(2)
+                .setDimAmount(0.5f);
+
+        hud.show();
+
+        ZapposAPI zapposAPI = retrofit.create(ZapposAPI.class);
+        Call<ProductListResponse> call = zapposAPI.searchProducts(brand_name, ConstantUtil.API_KEY);
+
+        //asynchronous call
+        call.enqueue(this);
     }
 
     @Override
@@ -116,135 +166,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    class QueryZapposAPITask extends AsyncTask<String, Void, JSONObject> {
-
-        Context context;
-
-        public QueryZapposAPITask(Context mContext){
-            this.context = mContext;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            hud = KProgressHUD.create(MainActivity.this)
-                    .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
-                    .setLabel("LOADING")
-                    .setCancellable(true)
-                    .setAnimationSpeed(2)
-                    .setDimAmount(0.5f);
-
-            hud.show();
-        }
-
-        @Override
-        protected JSONObject doInBackground(String... params) {
-            String url = params[0];
-            String brand_name = params[1];
-            String api_key = params[2];
-
-            String charset = "UTF-8";
-
-            try {
-                String query = String.format("term=%s&key=%s",
-                        URLEncoder.encode(brand_name, charset),
-                        URLEncoder.encode(api_key, charset));
-
-                URLConnection connection = new URL(url + "?" + query).openConnection();
-                connection.setRequestProperty("Accept-Charset", charset);
-                InputStream response = connection.getInputStream();
-
-                String res = "";
-                try (Scanner scanner = new Scanner(response)) {
-                    String responseBody = scanner.useDelimiter("\\A").next();
-                    res += responseBody;
-                }
-
-                Log.d("query result", res);
-                JSONObject result = new JSONObject(res);
-                return result;
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+    private void showAlert(String message){
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setMessage(message);
+        builder.setCancelable(false);
+        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
             }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(JSONObject jsonObject) {
-            super.onPostExecute(jsonObject);
-
-            hud.dismiss();
-
-            if(jsonObject == null){
-                showAlert("Please check your internet connection");
-            }
-            else{
-                try{
-                    JSONArray jArray = jsonObject.getJSONArray("results");
-
-                    if(jArray.length() == 0) {
-                        Log.d("EMPTY", String.format("No result found for input: %s", jsonObject.getString("originalTerm")));
-
-                        showAlert("No result found for your input");
-                    }
-                    else{
-                        productListDataSource = getProductList(jArray);
-                        Intent intent = new Intent(getBaseContext(), ProductListActivity.class);
-                        intent.putExtra("productListDataSource",productListDataSource);
-                        startActivity(intent);
-                    }
-                }
-                catch (JSONException e){
-                    e.printStackTrace();
-                }
-            }
-
-        }
-
-        private void showAlert(String message){
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setMessage(message);
-            builder.setCancelable(false);
-            builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.cancel();
-                }
-            });
-            AlertDialog alertLogin = builder.create();
-            alertLogin.show();
-        }
-
-        private ArrayList<Product> getProductList(JSONArray jArray){
-
-            ArrayList<Product> result = new ArrayList<>();
-
-            try{
-                for(int i = 0; i < jArray.length(); i++) {
-                    Product product = new Product();
-                    product.brandName = jArray.getJSONObject(i).getString("brandName");
-                    product.thumbnailImageUrl = jArray.getJSONObject(i).getString("thumbnailImageUrl");
-                    product.productId = jArray.getJSONObject(i).getString("productId");
-                    product.originalPrice = jArray.getJSONObject(i).getString("originalPrice");
-                    product.styleId = jArray.getJSONObject(i).getString("styleId");
-                    product.colorId = jArray.getJSONObject(i).getString("colorId");
-                    product.price = jArray.getJSONObject(i).getString("price");
-                    product.percentOff = jArray.getJSONObject(i).getString("percentOff");
-                    product.productUrl = jArray.getJSONObject(i).getString("productUrl");
-                    product.productName = jArray.getJSONObject(i).getString("productName");
-                    result.add(product);
-                }
-            }
-            catch (JSONException e){
-                e.printStackTrace();
-            }
-
-            return result;
-
-        }
+        });
+        AlertDialog alertLogin = builder.create();
+        alertLogin.show();
     }
+
 }

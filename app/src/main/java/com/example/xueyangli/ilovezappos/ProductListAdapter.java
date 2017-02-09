@@ -5,9 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.xueyangli.ilovezappos.model.Product;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONObject;
 
@@ -53,13 +55,15 @@ public class ProductListAdapter extends BaseAdapter {
 
         TextView brandNameTextView = (TextView) rowView.findViewById(R.id.brand_name);
         TextView productNameTextView = (TextView) rowView.findViewById(R.id.product_name);
-        TextView priceTagTextView = (TextView) rowView.findViewById(R.id.price_tag);
+        ImageView imageView = (ImageView) rowView.findViewById(R.id.product_icon);
+
 
         Product product = mDataSource.get(position);
 
         brandNameTextView.setText(product.brandName.toUpperCase());
         productNameTextView.setText(product.productName);
-        priceTagTextView.setText(product.price);
+        Picasso.with(mContext).load(product.thumbnailImageUrl).placeholder(R.mipmap.ic_launcher).into(imageView);
+
         return rowView;
     }
 }

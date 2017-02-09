@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
+    <ImageView
+        android:id="@+id/product_icon"
+        android:layout_width="150px"
+        android:layout_height="150px"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_gravity="start"
+        >
+    </ImageView>
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="end"
         android:orientation="vertical"
         android:id="@+id/brand_product">
 
@@ -21,11 +33,4 @@
 
     </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/brand_product"
-        android:gravity="end"
-        android:id="@+id/price_tag"/>
-
-</RelativeLayout>
+</LinearLayout>
