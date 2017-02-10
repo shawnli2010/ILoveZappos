@@ -14,9 +14,17 @@
  * The product will be rotated and moved into the cart(animation) when the button is pressed on product detail page
 
 3. Technology involved:
+
 * Use **Data Binding** to show the information of product on product detail page
 * Use **Retrofit2** to consume Zappos API
 * Use **Piacasso** to load image from server
+
+4. Screen Shots
+
+![alt tag](https://github.com/shawnli2010/ILoveZappos/blob/master/screen_shots/home_page.png)
+![alt tag](https://github.com/shawnli2010/ILoveZappos/blob/master/screen_shots/product_list_page.png)
+![alt tag](https://github.com/shawnli2010/ILoveZappos/blob/master/screen_shots/product_detail_page.png)
+![alt tag](https://github.com/shawnli2010/ILoveZappos/blob/master/screen_shots/shopping_cart_page.png)
 
 
 
