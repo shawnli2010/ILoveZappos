@@ -63,7 +63,6 @@ public class CartListAdapater extends BaseAdapter {
 
         brandNameTextView.setText(product.brandName.toUpperCase());
         productNameTextView.setText(product.productName);
-        removeButton.setText("remove");
 
         removeButton.setOnClickListener(new View.OnClickListener()
         {
@@ -74,6 +73,9 @@ public class CartListAdapater extends BaseAdapter {
                 notifyDataSetChanged();
                 if(mContext instanceof CartListActivity){
                     ((CartListActivity)mContext).updateHotCount(mDataSource.size());
+                    if(mDataSource.size() == 0){
+                        ((CartListActivity)mContext).setEmptyLabelVisible(true);
+                    }
                 }
             }
         });

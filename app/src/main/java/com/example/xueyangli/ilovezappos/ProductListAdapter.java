@@ -11,8 +11,6 @@ import android.widget.TextView;
 import com.example.xueyangli.ilovezappos.model.Product;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 
 /**

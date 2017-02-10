@@ -1,6 +1,8 @@
 package com.example.xueyangli.ilovezappos;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -22,10 +24,18 @@ public class CartListActivity extends AppCompatActivity implements View.OnClickL
     private ArrayList<Product> cart;
     private TextView currentCartSizeTextView = null;
 
+    private TextView empty_cart;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
+
+        ColorDrawable colorDrawable = new ColorDrawable();
+        colorDrawable.setColor(Color.parseColor("#7399C7"));
+        getSupportActionBar().setBackgroundDrawable(colorDrawable);
+
+        empty_cart = (TextView) findViewById(R.id.empty_label);
 
         dataSource = ((MyApplication) this.getApplication()).getCart();
         cart = ((MyApplication) this.getApplication()).getCart();
@@ -44,6 +54,8 @@ public class CartListActivity extends AppCompatActivity implements View.OnClickL
     protected void onStart() {
         super.onStart();
         updateHotCount(cart.size());
+        if(cart.size() == 0) setEmptyLabelVisible(true);
+        else                 setEmptyLabelVisible(false);
     }
 
     @Override
@@ -76,5 +88,10 @@ public class CartListActivity extends AppCompatActivity implements View.OnClickL
                 }
             }
         });
+    }
+
+    public void setEmptyLabelVisible(boolean visible){
+        if(visible) empty_cart.setVisibility(View.VISIBLE);
+        else        empty_cart.setVisibility(View.GONE);
     }
 }

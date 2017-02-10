@@ -4,6 +4,14 @@
     android:layout_height="fill_parent"
     android:orientation="horizontal" >
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/empty_label"
+        android:text="Your cart is empty"
+        android:textSize="30sp"/>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="fill_parent"

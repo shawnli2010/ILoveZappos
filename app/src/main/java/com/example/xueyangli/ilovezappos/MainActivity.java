@@ -1,9 +1,11 @@
 package com.example.xueyangli.ilovezappos;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -47,6 +49,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ColorDrawable colorDrawable = new ColorDrawable();
+        colorDrawable.setColor(Color.parseColor("#7399C7"));
+        getSupportActionBar().setBackgroundDrawable(colorDrawable);
 
         mContext = this;
 

@@ -3,18 +3,18 @@ package com.example.xueyangli.ilovezappos;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.AsyncTask;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatImageButton;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -25,10 +25,6 @@ import com.example.xueyangli.ilovezappos.model.Product;
 import com.example.xueyangli.ilovezappos.model.ScaleImageView;
 import com.kaopiz.kprogresshud.KProgressHUD;
 import com.squareup.picasso.Picasso;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener {
@@ -36,7 +32,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     private Product product;
     private ScaleImageView productImageView;
     private ImageView smallProductImageView;
-    private Button addToCartButton;
+    private ImageButton addToCartButton;
 
     private KProgressHUD hud;
 
@@ -46,7 +42,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_product);
+
+        ColorDrawable colorDrawable = new ColorDrawable();
+        colorDrawable.setColor(Color.parseColor("#7399C7"));
+        getSupportActionBar().setBackgroundDrawable(colorDrawable);
 
         cart = ((MyApplication) this.getApplication()).getCart();
 
@@ -55,12 +54,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         ActivityProductBinding binding = DataBindingUtil.setContentView(this,R.layout.activity_product);
         binding.setProduct(product);
 
-        addToCartButton = (Button)findViewById(R.id.add_to_cart_button);
+        addToCartButton = (ImageButton)findViewById(R.id.add_to_cart_button);
         addToCartButton.setOnClickListener(
                 new View.OnClickListener() {
                     public void onClick(View view) {
-                        showAlert("Do you want to add this item to your cart?");
-                    }
+                        doAnimation();
+                        cart.add(product);
+                        updateHotCount(cart.size());                    }
                 }
         );
 
@@ -100,32 +100,14 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         /***************** Price TextView Setup *****************/
     }
 
-    private void showAlert(String message){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(message);
-        builder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                int[] location = new int[2];
-                addToCartButton.getLocationOnScreen(location);
-                smallProductImageView.setX(location[0] + 250);
-                smallProductImageView.setY(location[1] - 300);
+    private void doAnimation(){
+        int[] location = new int[2];
+        addToCartButton.getLocationOnScreen(location);
+        smallProductImageView.setX(location[0] + 50);
+        smallProductImageView.setY(location[1] - 300);
 
-                smallProductImageView.setVisibility(View.VISIBLE);
-                smallProductImageView.animate().rotationBy(-360).translationX(600).translationY(-150).setDuration(900);
-
-                cart.add(product);
-                updateHotCount(cart.size());
-            }
-        });
-
-        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        AlertDialog alertLogin = builder.create();
-        alertLogin.show();
+        smallProductImageView.setVisibility(View.VISIBLE);
+        smallProductImageView.animate().rotationBy(-360).translationX(600).translationY(-150).setDuration(900);
     }
 
     @Override

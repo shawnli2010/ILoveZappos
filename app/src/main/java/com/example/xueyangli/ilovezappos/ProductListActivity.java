@@ -1,7 +1,8 @@
 package com.example.xueyangli.ilovezappos;
 
-import android.app.ListActivity;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -31,6 +32,10 @@ public class ProductListActivity extends AppCompatActivity implements View.OnCli
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_list);
+
+        ColorDrawable colorDrawable = new ColorDrawable();
+        colorDrawable.setColor(Color.parseColor("#7399C7"));
+        getSupportActionBar().setBackgroundDrawable(colorDrawable);
 
         cart = ((MyApplication) this.getApplication()).getCart();
 

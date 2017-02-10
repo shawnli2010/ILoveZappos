@@ -30,9 +30,9 @@ android:orientation="horizontal" >
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:maxLength="27"
+            android:maxLines="3"
             android:ellipsize="end"
+            android:maxWidth="160dp"
             android:id="@+id/cart_product_name"/>
 
     </LinearLayout>
@@ -45,7 +45,10 @@ android:orientation="horizontal" >
     <Button
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:gravity="end"
+        android:gravity="center"
+        android:text="REMOVE"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="@android:color/holo_red_light"
         android:id="@+id/remove_product_button"/>
 
 </LinearLayout>

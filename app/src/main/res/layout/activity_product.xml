@@ -38,11 +38,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{product.brandName.toUpperCase()}"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:maxWidth="200dp"
                 android:textSize="30sp"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{product.productName}"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:maxWidth="200dp"
                 android:textSize="20sp"/>
 
         </LinearLayout>
@@ -52,20 +58,39 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <TextView android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{@string/sku(product.productId)}"
-            android:textSize="15sp"/>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{@string/sku(product.productId)}"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{product.price}"
+                android:textSize="30sp"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <ImageButton
+        android:id="@+id/add_to_cart_button"
         android:layout_above="@+id/price_info"
-        android:text="@{product.price}"
-        android:id="@+id/add_to_cart_button">
-    </Button>
+        android:layout_width="@dimen/round_button_diameter"
+        android:layout_height="@dimen/round_button_diameter"
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="@dimen/add_button_margin"
+        android:layout_marginEnd="@dimen/add_button_margin"
+        android:tint="@android:color/white"
+        android:background="@drawable/oval"
+        android:elevation="@dimen/elevation_low"
+        android:layout_centerHorizontal="true"
+        android:src="@android:drawable/ic_input_add"/>
 
     <LinearLayout
         android:orientation="horizontal"
