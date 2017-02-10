@@ -1,4 +1,4 @@
-package com.example.xueyangli.ilovezappos;
+package com.example.xueyangli.ilovezappos.adapater;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.xueyangli.ilovezappos.R;
 import com.example.xueyangli.ilovezappos.model.Product;
 import com.squareup.picasso.Picasso;
 

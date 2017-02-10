@@ -1,6 +1,8 @@
 package com.example.xueyangli.ilovezappos;
 
 /**
+ * Constant interface declares constants which will be used by the whole project
+ *
  * Created by xueyangli on 2/9/17.
  */
 

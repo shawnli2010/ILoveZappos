@@ -1,6 +1,4 @@
-package com.example.xueyangli.ilovezappos;
-
-import com.example.xueyangli.ilovezappos.model.Product;
+package com.example.xueyangli.ilovezappos.model;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -15,5 +13,4 @@ import retrofit2.http.Query;
 public interface ZapposAPI {
     @GET("/Search")
     Call<ProductListResponse> searchProducts(@Query("term") String tags, @Query("key") String key);
-
 }

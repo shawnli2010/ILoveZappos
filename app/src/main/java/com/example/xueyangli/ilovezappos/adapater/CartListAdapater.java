@@ -1,7 +1,6 @@
-package com.example.xueyangli.ilovezappos;
+package com.example.xueyangli.ilovezappos.adapater;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +9,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.xueyangli.ilovezappos.GeneralUtil;
+import com.example.xueyangli.ilovezappos.activity.CartListActivity;
+import com.example.xueyangli.ilovezappos.R;
 import com.example.xueyangli.ilovezappos.model.Product;
 import com.squareup.picasso.Picasso;
 
@@ -24,10 +26,13 @@ public class CartListAdapater extends BaseAdapter {
     private LayoutInflater mInflater;
     private ArrayList<Product> mDataSource;
 
+    private GeneralUtil generalUtil;
+
     public CartListAdapater(Context context, ArrayList<Product> items){
         this.mContext = context;
         this.mDataSource = items;
         this.mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.generalUtil = new GeneralUtil(mContext);
     }
 
     @Override
@@ -72,7 +77,8 @@ public class CartListAdapater extends BaseAdapter {
                 mDataSource.remove(position);
                 notifyDataSetChanged();
                 if(mContext instanceof CartListActivity){
-                    ((CartListActivity)mContext).updateHotCount(mDataSource.size());
+                    TextView textView = ((CartListActivity) mContext).getCurrentCartSizeTextView();
+                    generalUtil.updateHotCount(textView,mDataSource.size());
                     if(mDataSource.size() == 0){
                         ((CartListActivity)mContext).setEmptyLabelVisible(true);
                     }

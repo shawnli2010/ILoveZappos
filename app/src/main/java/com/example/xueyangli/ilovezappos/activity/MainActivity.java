@@ -1,15 +1,8 @@
-package com.example.xueyangli.ilovezappos;
+package com.example.xueyangli.ilovezappos.activity;
 
-import android.app.ActionBar;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,9 +10,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.xueyangli.ilovezappos.model.Product;
-import com.kaopiz.kprogresshud.KProgressHUD;
 import com.example.xueyangli.ilovezappos.ConstantUtil;
+import com.example.xueyangli.ilovezappos.GeneralUtil;
+import com.example.xueyangli.ilovezappos.MyApplication;
+import com.example.xueyangli.ilovezappos.R;
+import com.example.xueyangli.ilovezappos.model.Product;
+import com.example.xueyangli.ilovezappos.model.ProductListResponse;
+import com.example.xueyangli.ilovezappos.model.ZapposAPI;
+import com.kaopiz.kprogresshud.KProgressHUD;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,32 +36,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private KProgressHUD hud;
 
-    private Context mContext;
-
-    private ArrayList<Product> productListDataSource;
-
     private ArrayList<Product> cart;
     private TextView currentCartSizeTextView = null;
+
+    private GeneralUtil generalUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ColorDrawable colorDrawable = new ColorDrawable();
-        colorDrawable.setColor(Color.parseColor("#7399C7"));
-        getSupportActionBar().setBackgroundDrawable(colorDrawable);
+        // Create util instance and set the actionbar's color
+        generalUtil = new GeneralUtil(this);
+        generalUtil.setActionBarColor();
 
-        mContext = this;
-
+        // Create the retrofit instance
         retrofit = new Retrofit.Builder()
                 .baseUrl(ConstantUtil.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-//        makeAPICall("nike");
-
-        // Create the global cart object
+        // Create and set the global_cart object
         ArrayList<Product> global_cart = new ArrayList<Product>();
         ((MyApplication) this.getApplication()).setCart(global_cart);
         cart = ((MyApplication) this.getApplication()).getCart();
@@ -80,36 +73,90 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
         );
-
-
     }
 
+    /*
+     * Retrofit2 call back method.
+     * If success, it will start a ProductListActivity which lists out all the products that
+     * are returned from the server.
+     * Else it will show an alert dialog.
+     */
     @Override
     public void onResponse(Call<ProductListResponse> call, Response<ProductListResponse> response) {
         hud.dismiss();
-        String body = response.body().toString();
-        boolean isSuccess = response.raw().isSuccessful();
-        List<Product> products = new ArrayList<>();
 
+        boolean isSuccess = response.raw().isSuccessful();
         if(isSuccess){
-            products = response.body().getProducts();
-            productListDataSource = (ArrayList)products;
+            List<Product> products = response.body().getProducts();
+            ArrayList<Product> productListDataSource = (ArrayList)products;
+
             Intent intent = new Intent(getBaseContext(), ProductListActivity.class);
             intent.putExtra("productListDataSource",productListDataSource);
             startActivity(intent);
         }
         else{
-            showAlert("Please check your internet connection");
+            generalUtil.showAlert("Please check your internet connection");
         }
     }
 
+    /*
+     * Retrofit2 call back method.
+     * If the request failed, it will show an alert dialog to notify user to check their internet
+     */
     @Override
     public void onFailure(Call<ProductListResponse> call, Throwable t) {
         hud.dismiss();
-        showAlert("Please check your internet connection");
+        generalUtil.showAlert("Please check your internet connection");
     }
 
+    /*
+     * onClick method listens to the actionbar, it will pop the CartListActivty when the
+     * actionbar is clicked
+     */
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(getBaseContext(), CartListActivity.class);
+        startActivity(intent);
+    }
+
+    /*
+     * shopping cart size indicator needs to be updated every time the activity re-appear
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        generalUtil.updateHotCount(currentCartSizeTextView,cart.size());
+    }
+
+    /*
+     * Set up the action bar, update the shopping cart count
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.my_menu, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.cart);
+        View menu_hotlist = menuItem.getActionView();
+
+        menu_hotlist.setOnClickListener(this);
+
+        currentCartSizeTextView = (TextView) menu_hotlist.findViewById(R.id.cart_count);
+        generalUtil.updateHotCount(currentCartSizeTextView,cart.size());
+
+
+        return true;
+    }
+
+    /**
+     * makeAPICall will make a GET request to Zappos API using Retrofit2.
+     * The returned JSON object will automatically be parsed to a List<Product>
+     * that is encapsulated by ProductListResponse obejct
+     *
+     * @param brand_name the user-input string which represents the brand
+     *                   that needs to be searched for
+     */
     private void makeAPICall(String brand_name){
+        // Show the progress hud while making the asynchronous call
         hud = KProgressHUD.create(MainActivity.this)
                 .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
                 .setLabel("LOADING")
@@ -121,68 +168,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ZapposAPI zapposAPI = retrofit.create(ZapposAPI.class);
         Call<ProductListResponse> call = zapposAPI.searchProducts(brand_name, ConstantUtil.API_KEY);
-
-        //asynchronous call
         call.enqueue(this);
     }
-
-    @Override
-    public void onClick(View v) {
-        Intent intent = new Intent(getBaseContext(), CartListActivity.class);
-        startActivity(intent);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        updateHotCount(cart.size());
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.my_menu, menu);
-
-        MenuItem menuItem = menu.findItem(R.id.cart);
-        View menu_hotlist = menuItem.getActionView();
-
-        menu_hotlist.setOnClickListener(this);
-
-        currentCartSizeTextView = (TextView) menu_hotlist.findViewById(R.id.cart_count);
-        updateHotCount(cart.size());
-
-
-        return true;
-    }
-
-    // call the updating code on the main thread,
-    // so we can call this asynchronously
-    public void updateHotCount(final int new_cart_size) {
-        if (currentCartSizeTextView == null) return;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (new_cart_size == 0)
-                    currentCartSizeTextView.setVisibility(View.INVISIBLE);
-                else {
-                    currentCartSizeTextView.setVisibility(View.VISIBLE);
-                    currentCartSizeTextView.setText(Integer.toString(new_cart_size));
-                }
-            }
-        });
-    }
-
-    private void showAlert(String message){
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setMessage(message);
-        builder.setCancelable(false);
-        builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
-        AlertDialog alertLogin = builder.create();
-        alertLogin.show();
-    }
-
 }

@@ -1,8 +1,6 @@
-package com.example.xueyangli.ilovezappos;
+package com.example.xueyangli.ilovezappos.activity;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -12,11 +10,17 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.xueyangli.ilovezappos.GeneralUtil;
+import com.example.xueyangli.ilovezappos.MyApplication;
+import com.example.xueyangli.ilovezappos.R;
+import com.example.xueyangli.ilovezappos.adapater.ProductListAdapter;
 import com.example.xueyangli.ilovezappos.model.Product;
 
 import java.util.ArrayList;
 
 /**
+ * Product List that will show a list of product from the GET query made to Zappos API
+ *
  * Created by xueyangli on 2/6/17.
  */
 
@@ -28,14 +32,15 @@ public class ProductListActivity extends AppCompatActivity implements View.OnCli
     private ArrayList<Product> cart;
     private TextView currentCartSizeTextView = null;
 
+    private GeneralUtil generalUtil;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_list);
 
-        ColorDrawable colorDrawable = new ColorDrawable();
-        colorDrawable.setColor(Color.parseColor("#7399C7"));
-        getSupportActionBar().setBackgroundDrawable(colorDrawable);
+        generalUtil = new GeneralUtil(this);
+        generalUtil.setActionBarColor();
 
         cart = ((MyApplication) this.getApplication()).getCart();
 
@@ -54,18 +59,28 @@ public class ProductListActivity extends AppCompatActivity implements View.OnCli
         });
     }
 
+    /*
+     * onClick method listens to the actionbar, it will pop the CartListActivty when the
+     * actionbar is clicked
+     */
     @Override
     public void onClick(View v) {
         Intent intent = new Intent(getBaseContext(), CartListActivity.class);
         startActivity(intent);
     }
 
+    /*
+     * shopping cart size indicator needs to be updated every time the activity re-appear
+     */
     @Override
     protected void onStart() {
         super.onStart();
-        updateHotCount(cart.size());
+        generalUtil.updateHotCount(currentCartSizeTextView,cart.size());
     }
 
+    /*
+     * Set up the action bar, update the shopping cart count
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -77,27 +92,9 @@ public class ProductListActivity extends AppCompatActivity implements View.OnCli
         menu_hotlist.setOnClickListener(this);
 
         currentCartSizeTextView = (TextView) menu_hotlist.findViewById(R.id.cart_count);
-        updateHotCount(cart.size());
+        generalUtil.updateHotCount(currentCartSizeTextView,cart.size());
 
 
         return true;
     }
-
-    // call the updating code on the main thread,
-    // so we can call this asynchronously
-    public void updateHotCount(final int new_cart_size) {
-        if (currentCartSizeTextView == null) return;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (new_cart_size == 0)
-                    currentCartSizeTextView.setVisibility(View.INVISIBLE);
-                else {
-                    currentCartSizeTextView.setVisibility(View.VISIBLE);
-                    currentCartSizeTextView.setText(Integer.toString(new_cart_size));
-                }
-            }
-        });
-    }
-
 }
